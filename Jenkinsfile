@@ -29,7 +29,7 @@ pipeline {
         stage("prepare environment for master deploy") {
             agent {
                 node {
-                    label "master">
+                    label "master"
                 }
             }
             when {
