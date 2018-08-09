@@ -99,7 +99,7 @@ pipeline {
                 }
                 success {
                     echo "Git tagging"
-                    sh git tag -a ${JENKINS_TAG} -m "JENKINS automated commit"
+                    sh 'git tag -a ${JENKINS_TAG} -m "JENKINS automated commit"'
                     sshagent(jgoldsmith613) {
                       sh('git push ${GITLAB_SSH} --tags')
                     }
