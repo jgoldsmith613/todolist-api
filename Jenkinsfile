@@ -7,16 +7,14 @@ pipeline {
 
     environment {
         // GLobal Vars
-        PIPELINES_NAMESPACE = "<YOUR_NAME>-ci-cd"
+        PIPELINES_NAMESPACE = "justin-ci-cd"
         APP_NAME = "todolist-api"
 
         JENKINS_TAG = "${JOB_NAME}.${BUILD_NUMBER}".replace("/", "-")
         JOB_NAME = "${JOB_NAME}".replace("/", "-")
 
         GIT_SSL_NO_VERIFY = true
-        GIT_CREDENTIALS = credentials('jenkins-git-creds')
-        GITLAB_DOMAIN = "gitlab.apps.lader.rht-labs.com"
-        GITLAB_PROJECT = "<GIT_USERNAME>"
+        GITLAB_SSH = "git@github.com:jgoldsmith613/todolist-fe.git"
     }
 
     // The options directive is for configuration that applies to the whole job.
@@ -31,7 +29,7 @@ pipeline {
         stage("prepare environment for master deploy") {
             agent {
                 node {
-                    label "master"
+                    label "master">
                 }
             }
             when {
@@ -40,7 +38,7 @@ pipeline {
             steps {
                 script {
                     // Arbitrary Groovy Script executions can do in script tags
-                    env.PROJECT_NAMESPACE = "<YOUR_NAME>-test"
+                    env.PROJECT_NAMESPACE = "justin-test"
                     env.NODE_ENV = "test"
                     env.E2E_TEST_ROUTE = "oc get route/${APP_NAME} --template='{{.spec.host}}' -n ${PROJECT_NAMESPACE}".execute().text.minus("'").minus("'")
                 }
@@ -58,7 +56,7 @@ pipeline {
             steps {
                 script {
                     // Arbitrary Groovy Script executions can do in script tags
-                    env.PROJECT_NAMESPACE = "<YOUR_NAME>-dev"
+                    env.PROJECT_NAMESPACE = "justin-dev"
                     env.NODE_ENV = "dev"
                     env.E2E_TEST_ROUTE = "oc get route/${APP_NAME} --template='{{.spec.host}}' -n ${PROJECT_NAMESPACE}".execute().text.minus("'").minus("'")
                 }
@@ -73,7 +71,7 @@ pipeline {
             steps {
                 // git branch: 'develop',
                 //     credentialsId: 'jenkins-git-creds',
-                //     url: 'https://gitlab-<YOUR_NAME>-ci-cd.apps.somedomain.com/<YOUR_NAME>/todolist-api.git'
+                //     url: 'https://gitlab-justin-ci-cd.apps.somedomain.com/justin/todolist-api.git'
                 sh 'printenv'
 
                 echo '### Install deps ###'
@@ -101,10 +99,11 @@ pipeline {
                 }
                 success {
                     echo "Git tagging"
-                    sh'''
-                        git tag -a ${JENKINS_TAG} -m "JENKINS automated commit"
-                        git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@${GITLAB_DOMAIN}/${GITLAB_PROJECT}/${APP_NAME}.git --tags
-                    '''
+                    sh git tag -a ${JENKINS_TAG} -m "JENKINS automated commit"
+                    sshagent(jgoldsmith613) {
+                      sh('git push ${GITLAB_SSH} --tags')
+                    }
+                  
                 }
                 failure {
                     echo "FAILURE"
