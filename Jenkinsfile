@@ -14,7 +14,7 @@ pipeline {
         JOB_NAME = "${JOB_NAME}".replace("/", "-")
 
         GIT_SSL_NO_VERIFY = true
-        GITLAB_SSH = "git@github.com:jgoldsmith613/todolist-fe.git"
+        GITLAB_SSH = "git@github.com:jgoldsmith613/todolist-api.git"
     }
 
     // The options directive is for configuration that applies to the whole job.
